@@ -5,60 +5,67 @@ import '../models/transaction.dart';
 
 class TransactionList extends StatelessWidget {
   final List<Transaction> _userTransactions;
+  final Function _deleteTx;
 
-  TransactionList(this._userTransactions);
+  TransactionList(this._userTransactions, this._deleteTx);
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 400,
-      child: ListView.builder(
-        itemBuilder: (ctx, index) {
-          return Card(
-            margin: EdgeInsets.all(3),
-            elevation: 5,
-            child: Row(
-              children: <Widget>[
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Theme.of(context).accentColor,
-                      width: 1,
+    return _userTransactions.isEmpty
+        ? LayoutBuilder(
+          builder: (bCtx, constraints){
+            return Column(
+            children: <Widget>[
+              Text('No transaction added yet'),
+              SizedBox(
+                //To add sapce between text and image. we can provide width as well
+                height: 10,
+              ),
+              Container(
+                  height: constraints.maxHeight * 0.4,
+                  child: Image.asset(
+                    'assets/images/waiting.png',
+                    fit: BoxFit.cover,
+                  ))
+            ],
+          );
+          },
+        ) 
+        : ListView.builder(
+            itemBuilder: (ctx, index) {
+              return Card(
+                elevation: 5,
+                margin: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    radius: 30,
+                    child: Padding(
+                      padding: EdgeInsets.all(5),
+                      child: FittedBox(
+                        child: Text('\$${_userTransactions[index].amount}'),
+                      ),
                     ),
                   ),
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    _userTransactions[index].amount.toStringAsFixed(2),
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        color: Theme.of(context).primaryColor),
+                  title: Text(
+                    _userTransactions[index].title,
+                    style: Theme.of(context).textTheme.title,
+                  ),
+                  subtitle: Text(
+                    DateFormat.yMMMd().format(_userTransactions[index].tdate),
+                  ),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () => _deleteTx(_userTransactions[index].id),
+                    color: Theme.of(context).errorColor,
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      _userTransactions[index].title,
-                      style: Theme.of(context).textTheme.title,
-                    ),
-                    Text(
-                      DateFormat.yMMMd().format(_userTransactions[index].tdate),
-                      style: Theme.of(context).textTheme.subtitle,
-                    )
-                  ],
-                )
-              ],
-            ),
-          );
-        },
+              );
+            },
 
-        itemCount: _userTransactions.length,
-        //Column widget takes list as input
-        //hence instead of passing Widget list, we are passing Transaction list.
-        // children: _userTransactions.map((tx) {
-        // }).toList(),
-      ),
-    );
+            itemCount: _userTransactions.length,
+            //Column widget takes list as input
+            //hence instead of passing Widget list, we are passing Transaction list.
+            // children: _userTransactions.map((tx) {
+            // }).toList(),
+          );
   }
 }
