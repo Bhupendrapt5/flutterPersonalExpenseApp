@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import './models/transaction.dart';
@@ -11,6 +14,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // textScaleFactor tells you by how much text output in the app should be scaled
+
     return MaterialApp(
       title: 'Personal Expenses',
       theme: ThemeData(
@@ -116,22 +121,96 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
 
+  List<Widget> _buildLandscapeContent(AppBar _myAppBar, Widget _txListBar) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text("Show Chart"),
+          Switch(
+              value: _showChart,
+              onChanged: (val) {
+                setState(
+                  () {
+                    _showChart = val;
+                  },
+                );
+              })
+        ],
+      ),
+      _showChart
+          ? Container(
+              height: (MediaQuery.of(context).size.height -
+                      _myAppBar.preferredSize.height -
+                      MediaQuery.of(context).padding.top) *
+                  0.7,
+              child: Chart(_recentTransaction),
+            )
+          : _txListBar
+    ];
+  }
+
+  List<Widget> _buildPortraitContent(AppBar _myAppBar, Widget _txListBar) {
+    return [
+      Container(
+        height: (MediaQuery.of(context).size.height -
+                _myAppBar.preferredSize.height -
+                MediaQuery.of(context).padding.top) *
+            0.25,
+        child: Chart(_recentTransaction),
+      ),
+      _txListBar
+    ];
+  }
+
+  CupertinoPageScaffold _cupertinoPageScaffold(Widget _pageBody, CupertinoNavigationBar _myAppBar){
+    return CupertinoPageScaffold(
+            child: _pageBody,
+            navigationBar: _myAppBar,
+          );
+  }
+  
+  Scaffold _scaffold(Widget _pageBody, AppBar _myAppBar){
+    return Scaffold(
+            appBar: _myAppBar,
+            body: _pageBody,
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: Platform.isIOS
+                ? Container()
+                : FloatingActionButton(
+                    onPressed: () => _startAtNewTransaction(context),
+                    child: Icon(Icons.add),
+                  ),
+          );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final _isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;     //To check orientation of device 
+    final _isLandscape = MediaQuery.of(context).orientation ==
+        Orientation.landscape; //To check orientation of device
 
-    final _myAppBar = AppBar(
-      title: Text(
-        'Expenses Manage',
-      ),
-      actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.add),
-          onPressed: () => _startAtNewTransaction(context),
-        ),
-      ],
-    );
+    final PreferredSizeWidget _myAppBar = Platform.isIOS
+        ? CupertinoNavigationBar(
+            middle: Text(
+              'Expenses Manage',
+            ),
+            trailing: GestureDetector(
+              onTap: () => _startAtNewTransaction(context),
+              child: Icon(CupertinoIcons.add),
+            ),
+          )
+        : AppBar(
+            title: Text(
+              'Expenses Manage',
+            ),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.add),
+                onPressed: () => _startAtNewTransaction(context),
+              ),
+            ],
+          );
 
     final _txListBar = Container(
       height: (MediaQuery.of(context).size.height -
@@ -141,56 +220,21 @@ class _MyHomePageState extends State<MyHomePage> {
       child: TransactionList(_userTransactions, _deleteTransaction),
     );
 
-    return Scaffold(
-      appBar: _myAppBar,
-      body: Container(
-        child: ListView(
-          children: <Widget>[
-            Column(
-              // mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                if (_isLandscape) Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text("Show Chart"),
-                    Switch(
-                        value: _showChart,
-                        onChanged: (val) {
-                          setState(
-                            () {
-                              _showChart = val;
-                            },
-                          );
-                        })
-                  ],
-                ),
-                if(!_isLandscape) Container(
-                        height: (MediaQuery.of(context).size.height -
-                                _myAppBar.preferredSize.height -
-                                MediaQuery.of(context).padding.top) *
-                            0.25,
-                        child: Chart(_recentTransaction),
-                      ),
-                if(!_isLandscape) _txListBar,    
-                if(_isLandscape)  
-               _showChart? Container(
-                        height: (MediaQuery.of(context).size.height -
-                                _myAppBar.preferredSize.height -
-                                MediaQuery.of(context).padding.top) *
-                            0.7,
-                        child: Chart(_recentTransaction),
-                      )
-                    :_txListBar,
-              ],
-            ),
-          ],
-        ),
+    final _pageBody = SafeArea(
+        child: SingleChildScrollView(
+      child: Column(
+        // mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          if (_isLandscape) ..._buildLandscapeContent(_myAppBar, _txListBar),
+          if (!_isLandscape)
+            ..._buildPortraitContent(_myAppBar,
+                _txListBar), //using three dots, makes the all the element of list to be merge as one arguement
+        ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _startAtNewTransaction(context),
-        child: Icon(Icons.add),
-      ),
-    );
+    ));
+
+    return Platform.isIOS
+        ? _cupertinoPageScaffold(_pageBody, _myAppBar)
+        : _scaffold(_pageBody, _myAppBar);
   }
 }

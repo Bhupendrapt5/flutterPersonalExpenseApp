@@ -1,5 +1,9 @@
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import '../widget/adaptive_flat_button.dart';
 
 class NewTransaction extends StatefulWidget {
   final Function addTx;
@@ -54,65 +58,65 @@ class _NewTransactionState extends State<NewTransaction> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      child: Container(
-        padding: EdgeInsets.all(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            TextField(
-              // onChanged: (val) => titleInput=val,           //Anonymous function, we can use named function too
-              onSubmitted: (_) =>
-                  _submitData(), // Underscore is used coz onSubmit requires a funtion with String parameter, and _submitData is funtion with no para
-              controller: _titleController,
-              decoration: InputDecoration(
-                labelText: 'Title',
+    return SingleChildScrollView(
+      child: Card(
+        elevation: 5,
+        child: Container(
+          padding: EdgeInsets.only(
+              top: 10,
+              left: 10,
+              right: 10,
+              bottom: MediaQuery.of(context).viewInsets.bottom +
+                  10 //ViewInsets propertie gives us how much is laping into view
               ),
-              cursorColor: Theme.of(context).accentColor,
-            ),
-            TextField(
-                // onChanged: (val){                   //anonymous function,  we can use named function too
-                //     amountInput = val;
-                // },
-                onSubmitted: (_) => _submitData(),
-                keyboardType:
-                    TextInputType.number, //To show only numbers on keyboard
-                controller: _amountController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              TextField(
+                // onChanged: (val) => titleInput=val,           //Anonymous function, we can use named function too
+                onSubmitted: (_) =>
+                    _submitData(), // Underscore is used coz onSubmit requires a funtion with String parameter, and _submitData is funtion with no para
+                controller: _titleController,
                 decoration: InputDecoration(
-                  labelText: 'Amount',
+                  labelText: 'Title',
                 ),
-                cursorColor: Theme.of(context).accentColor),
-            Container(
-              height: 70,
-              child: Row(
-                children: <Widget>[
-                  Flexible(
-                    fit: FlexFit.tight,
-                    child: Text(
-                      _selectedDate == null
-                          ? 'No Date Chosen!'
-                          : 'Picked date : ${DateFormat.yMd().format(_selectedDate)}',
-                    ),
-                  ),
-                  FlatButton(
-                    onPressed: _presentDatePicker,
-                    textColor: Theme.of(context).primaryColor,
-                    child: Text(
-                      'Choose Date',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  )
-                ],
+                cursorColor: Theme.of(context).accentColor,
               ),
-            ),
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              child: Text('Add Transaction'),
-              onPressed: _submitData,
-              textColor: Theme.of(context).textTheme.button.color,
-            )
-          ],
+              TextField(
+                  // onChanged: (val){                   //anonymous function,  we can use named function too
+                  //     amountInput = val;
+                  // },
+                  onSubmitted: (_) => _submitData(),
+                  keyboardType:
+                      TextInputType.number, //To show only numbers on keyboard
+                  controller: _amountController,
+                  decoration: InputDecoration(
+                    labelText: 'Amount',
+                  ),
+                  cursorColor: Theme.of(context).accentColor),
+              Container(
+                height: 70,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        _selectedDate == null
+                            ? 'No Date Chosen!'
+                            : 'Picked date : ${DateFormat.yMd().format(_selectedDate)}',
+                      ),
+                    ),
+                    AdaptiveFlatButton('Choose Date', _presentDatePicker),
+                  ],
+                ),
+              ),
+              RaisedButton(
+                color: Theme.of(context).primaryColor,
+                child: Text('Add Transaction'),
+                onPressed: _submitData,
+                textColor: Theme.of(context).textTheme.button.color,
+              )
+            ],
+          ),
         ),
       ),
     );
